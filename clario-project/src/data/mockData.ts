@@ -23,3 +23,16 @@ export const insights = [
   { id: 2, text: "Your mood seems slightly stressed today. Consider taking a 10-minute break to meditate." },
   { id: 3, text: "Great job completing your high priority tasks for the morning." }
 ];
+
+export const user = {
+  name: "Joel Navales",
+  email: "joel@email.com",
+  avatar: "https://i.pravatar.cc/150?u=joel"
+};
+
+export const userStats = {
+  totalHabits: 12,
+  tasksCompleted: 148,
+  currentStreak: 5,
+  moodConsistency: "85%"
+};
