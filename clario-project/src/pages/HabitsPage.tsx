@@ -7,19 +7,23 @@ import { Plus, X } from "lucide-react"
 import { useHabits } from "../features/habits/hooks/useHabits"
 
 export function HabitsPage() {
-  const { habits, addHabit, toggleHabit, isLoading } = useHabits()
+  const { habits, addHabit, toggleHabit, isLoading, error: hookError } = useHabits()
   const [isAdding, setIsAdding] = useState(false)
   const [newHabitTitle, setNewHabitTitle] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleAddHabit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newHabitTitle.trim()) return
     setIsSubmitting(true)
+    setSubmitError(null)
     try {
       await addHabit(newHabitTitle.trim())
       setNewHabitTitle("")
       setIsAdding(false)
+    } catch (err: any) {
+      setSubmitError(err.message || "Failed to add habit. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -43,6 +47,11 @@ export function HabitsPage() {
           <CardTitle>Your Habits</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {(hookError || submitError) && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              {submitError || hookError}
+            </div>
+          )}
           {isAdding && (
              <form onSubmit={handleAddHabit} className="flex gap-2 items-center p-4 rounded-xl border border-border bg-background">
                 <Input 
@@ -55,8 +64,18 @@ export function HabitsPage() {
              </form>
           )}
 
-          {isLoading && !isAdding && habits.length === 0 ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">Loading...</div>
+          {isLoading && habits.length === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-border bg-background animate-pulse">
+                  <div className="flex items-center gap-4">
+                    <div className="h-6 w-6 rounded-md bg-secondary" />
+                    <div className="h-4 w-40 rounded bg-secondary" />
+                  </div>
+                  <div className="h-6 w-24 rounded-full bg-secondary" />
+                </div>
+              ))}
+            </div>
           ) : habits.length === 0 && !isAdding ? (
             <div className="py-4 text-center text-sm text-muted-foreground">No habits yet. Click "Add Habit" to start.</div>
           ) : (

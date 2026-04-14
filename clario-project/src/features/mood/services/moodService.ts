@@ -11,7 +11,7 @@ export const moodService = {
       .from('moods')
       .select('*')
       .eq('user_id', userId)
-      .eq('date', today)
+      .eq('mood_date', today)
       .limit(1)
 
     if (error) throw error
@@ -27,8 +27,8 @@ export const moodService = {
       .from('moods')
       .select('*')
       .eq('user_id', userId)
-      .gte('date', sevenDaysAgoStr)
-      .order('date', { ascending: false })
+      .gte('mood_date', sevenDaysAgoStr)
+      .order('mood_date', { ascending: false })
 
     if (error) throw error
     return data || []
@@ -42,7 +42,7 @@ export const moodService = {
       .from('moods')
       .select('*')
       .eq('user_id', userId)
-      .eq('date', today)
+      .eq('mood_date', today)
       .limit(1)
       
     if (existingRows && existingRows.length > 0) {
@@ -59,7 +59,7 @@ export const moodService = {
       // Insert new
       const { data, error } = await supabase
         .from('moods')
-        .insert({ user_id: userId, mood_id: moodId, date: today })
+        .insert({ user_id: userId, mood_id: moodId, mood_date: today })
         .select()
         .single()
       if (error) throw error

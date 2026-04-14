@@ -1,11 +1,13 @@
+import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
-import { Settings, LogOut, CheckCircle, Flame, Target, Activity } from "lucide-react"
+import { Settings, LogOut, CheckCircle, Flame, Target, Activity, Palette, ChevronDown } from "lucide-react"
 import { useAuth } from "../features/auth/hooks/useAuth"
 import { useHabits } from "../features/habits/hooks/useHabits"
 import { useTasks } from "../features/tasks/hooks/useTasks"
 import { useMood } from "../features/mood/hooks/useMood"
 import { useNavigate } from "react-router-dom"
+import { useTheme, THEMES, type ThemeName } from "../features/theme/ThemeContext"
 
 export function ProfilePage() {
   const { user, profile, signOut } = useAuth()
@@ -13,6 +15,14 @@ export function ProfilePage() {
   const { tasks } = useTasks()
   const { weeklyMoods } = useMood()
   const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false)
+  const [pendingTheme, setPendingTheme] = useState<ThemeName>(theme)
+
+  const handleSaveTheme = () => {
+    setTheme(pendingTheme)
+    setThemeMenuOpen(false)
+  }
 
   const handleLogout = async () => {
     await signOut()
@@ -114,14 +124,62 @@ export function ProfilePage() {
                 <div className="h-5 w-5 rounded-full bg-background absolute right-0.5 top-[2px]" />
               </div>
             </div>
-            <div className="flex items-center justify-between p-6 hover:bg-secondary/20 transition-colors">
-              <div>
-                <p className="font-medium text-sm">Dark Mode</p>
-                <p className="text-sm text-muted-foreground">Toggle dark mode appearance (UI only).</p>
-              </div>
-              <div className="h-6 w-11 rounded-full bg-secondary relative cursor-pointer shadow-inner">
-                <div className="h-5 w-5 rounded-full bg-background absolute left-0.5 top-[2px] border border-border" />
-              </div>
+            <div className="flex flex-col">
+              <button
+                onClick={() => {
+                  setPendingTheme(theme)
+                  setThemeMenuOpen((o) => !o)
+                }}
+                className="flex items-center justify-between p-6 hover:bg-secondary/20 transition-colors text-left w-full"
+              >
+                <div className="flex items-center gap-3">
+                  <Palette className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">Color Theme</p>
+                    <p className="text-sm text-muted-foreground">Currently: {THEMES[theme].label}</p>
+                  </div>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${themeMenuOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {themeMenuOpen && (
+                <div className="px-6 pb-6 flex flex-col gap-4">
+                  <div className="flex flex-wrap gap-3">
+                    {(Object.keys(THEMES) as ThemeName[]).map((name) => {
+                      const config = THEMES[name]
+                      const isSelected = pendingTheme === name
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => setPendingTheme(name)}
+                          className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all duration-150 cursor-pointer w-16 ${
+                            isSelected
+                              ? 'border-primary bg-primary/5 scale-105'
+                              : 'border-border/50 hover:border-border hover:bg-secondary/50'
+                          }`}
+                          aria-label={`Select ${config.label} theme`}
+                          aria-pressed={isSelected}
+                        >
+                          <span
+                            className="h-8 w-8 rounded-full shadow-sm transition-all"
+                            style={{
+                              backgroundColor: config.previewColor,
+                              outline: isSelected ? `3px solid ${config.previewColor}` : '3px solid transparent',
+                              outlineOffset: '2px',
+                            }}
+                          />
+                          <span className="text-xs font-medium text-foreground leading-none">{config.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <Button className="w-full" onClick={handleSaveTheme}>
+                    Save Theme
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

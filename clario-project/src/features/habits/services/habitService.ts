@@ -19,12 +19,13 @@ export const habitService = {
   async fetchHabitLogs(userId: string): Promise<HabitLog[]> {
     const { data, error } = await supabase
       .from('habit_logs')
-      .select('*')
-      .eq('user_id', userId)
+      .select('*, habits!inner(user_id)')
+      .eq('habits.user_id', userId)
       .order('date', { ascending: false })
 
     if (error) throw error
-    return data || []
+    // Strip the nested join data before returning
+    return (data || []).map(({ habits: _h, ...log }) => log) as HabitLog[]
   },
 
   async createHabit(userId: string, title: string): Promise<Habit> {
@@ -41,14 +42,13 @@ export const habitService = {
   async logHabit(userId: string, habitId: number): Promise<HabitLog> {
     const date = new Date().toISOString().split('T')[0]
     
-    // Check if already logged today
+    // Check if already logged today (habit_id + date is unique per log)
     const { data: existing } = await supabase
       .from('habit_logs')
       .select('*')
-      .eq('user_id', userId)
       .eq('habit_id', habitId)
       .eq('date', date)
-      .single()
+      .maybeSingle()
 
     if (existing) {
       return existing // Already logged today
@@ -56,7 +56,7 @@ export const habitService = {
 
     const { data, error } = await supabase
       .from('habit_logs')
-      .insert({ user_id: userId, habit_id: habitId, date })
+      .insert({ habit_id: habitId, date })
       .select()
       .single()
 
@@ -69,7 +69,6 @@ export const habitService = {
     const { error } = await supabase
       .from('habit_logs')
       .delete()
-      .eq('user_id', userId)
       .eq('habit_id', habitId)
       .eq('date', date)
 

@@ -6,6 +6,32 @@ import { useAuth } from '../../auth/hooks/useAuth'
 type Task = Database['public']['Tables']['tasks']['Row']
 type TaskFolder = Database['public']['Tables']['task_folders']['Row']
 
+interface TasksCache {
+  tasks: Task[]
+  folders: TaskFolder[]
+}
+
+// ── Cache helpers (memory + sessionStorage so back-navigation works) ──────────
+const memCache = new Map<string, TasksCache>()
+
+function readTasksCache(userId: string): TasksCache | null {
+  if (memCache.has(userId)) return memCache.get(userId)!
+  try {
+    const raw = sessionStorage.getItem(`clario_tasks_${userId}`)
+    if (raw) {
+      const data = JSON.parse(raw) as TasksCache
+      memCache.set(userId, data)
+      return data
+    }
+  } catch { /* sessionStorage unavailable */ }
+  return null
+}
+
+function writeTasksCache(userId: string, data: TasksCache) {
+  memCache.set(userId, data)
+  try { sessionStorage.setItem(`clario_tasks_${userId}`, JSON.stringify(data)) } catch { /* ignore */ }
+}
+
 export function useTasks() {
   const { user } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
@@ -13,9 +39,20 @@ export function useTasks() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Restore from cache the moment we know who the user is (before network)
+  useEffect(() => {
+    if (!user) return
+    const cached = readTasksCache(user.id)
+    if (cached) {
+      setTasks(cached.tasks)
+      setFolders(cached.folders)
+      setIsLoading(false)
+    }
+  }, [user?.id])
+
   const loadData = useCallback(async () => {
     if (!user) return
-    setIsLoading(true)
+    if (!readTasksCache(user.id)) setIsLoading(true)
     setError(null)
     try {
       const [fetchedTasks, fetchedFolders] = await Promise.all([
@@ -24,6 +61,7 @@ export function useTasks() {
       ])
       setTasks(fetchedTasks)
       setFolders(fetchedFolders)
+      writeTasksCache(user.id, { tasks: fetchedTasks, folders: fetchedFolders })
     } catch (err: any) {
       setError(err.message || 'Failed to load tasks')
     } finally {
@@ -33,6 +71,12 @@ export function useTasks() {
 
   useEffect(() => {
     loadData()
+  }, [loadData])
+
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') loadData() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
   }, [loadData])
 
   const addTask = async (title: string, priority: string = 'medium', folderId: number | null = null) => {

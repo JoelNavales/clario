@@ -8,7 +8,7 @@ const MOODS_OPTIONS = [
 ];
 
 export function MoodPage() {
-  const { todayMood, weeklyMoods, setMood, isLoading } = useMood()
+  const { todayMood, weeklyMoods, setMood, isLoading, error } = useMood()
 
   const moodScoreMap: Record<string, number> = {
     'happy': 100,
@@ -20,7 +20,7 @@ export function MoodPage() {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const dateStr = d.toISOString().split('T')[0];
-    const moodForDay = weeklyMoods.find(m => m.date === dateStr);
+    const moodForDay = weeklyMoods.find(m => m.mood_date === dateStr);
     return moodForDay ? (moodScoreMap[moodForDay.mood_id] || 0) : 0;
   });
 
@@ -36,29 +36,33 @@ export function MoodPage() {
           <CardTitle>Select your mood</CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="py-8 flex justify-center"><div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {MOODS_OPTIONS.map((mood) => {
-                const isSelected = todayMood?.mood_id === mood.id;
-                return (
-                  <button 
-                    key={mood.id}
-                    onClick={() => setMood(mood.id)}
-                    className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all cursor-pointer group ${isSelected ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-secondary hover:border-primary/50'}`}
-                  >
-                    <span className={`text-4xl transition-transform block ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}>{mood.emoji}</span>
-                    <span className={`text-sm ${isSelected ? 'font-bold text-primary' : 'font-medium'}`}>{mood.label}</span>
-                  </button>
-                )
-              })}
-              <button disabled className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-dashed border-border text-muted-foreground transition-all cursor-not-allowed opacity-50">
-                <span className="text-2xl">+</span>
-                <span className="text-sm font-medium">Add custom</span>
-              </button>
+          {error && (
+            <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg">
+              {error}
             </div>
           )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {MOODS_OPTIONS.map((mood) => {
+              const isSelected = todayMood?.mood_id === mood.id;
+              return (
+                <button 
+                  key={mood.id}
+                  onClick={() => setMood(mood.id)}
+                  disabled={isLoading}
+                  className={`flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border transition-all cursor-pointer group disabled:opacity-60 disabled:cursor-not-allowed ${
+                    isSelected ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-secondary hover:border-primary/50'
+                  }`}
+                >
+                  <span className={`text-4xl transition-transform block ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`}>{mood.emoji}</span>
+                  <span className={`text-sm ${isSelected ? 'font-bold text-primary' : 'font-medium'}`}>{mood.label}</span>
+                </button>
+              )
+            })}
+            <button disabled className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border border-dashed border-border text-muted-foreground transition-all cursor-not-allowed opacity-50">
+              <span className="text-2xl">+</span>
+              <span className="text-sm font-medium">Add custom</span>
+            </button>
+          </div>
         </CardContent>
       </Card>
 

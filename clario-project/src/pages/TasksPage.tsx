@@ -133,7 +133,22 @@ export function TasksPage() {
 
       <div className="space-y-6">
         {isLoading && tasks.length === 0 && folders.length === 0 ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">Loading tasks...</div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl border border-border overflow-hidden animate-pulse">
+                <div className="h-10 bg-secondary/50 border-b" />
+                <div className="p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-5 w-5 rounded bg-secondary" />
+                      <div className="h-4 w-48 rounded bg-secondary" />
+                    </div>
+                    <div className="h-5 w-14 rounded-full bg-secondary" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : tasks.length === 0 && folders.length === 0 && !isAddingTask && !isAddingFolder ? (
           <div className="py-12 text-center border rounded-xl bg-card border-dashed">
              <p className="text-muted-foreground text-sm">No tasks or folders yet. Create something awesome!</p>

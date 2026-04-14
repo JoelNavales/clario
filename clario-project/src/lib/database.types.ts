@@ -35,21 +35,21 @@ export interface Database {
           id: number
           user_id: string
           mood_id: string
-          date: string
+          mood_date: string
           created_at: string
         }
         Insert: {
           id?: number
           user_id: string
           mood_id: string
-          date: string
+          mood_date: string
           created_at?: string
         }
         Update: {
           id?: number
           user_id?: string
           mood_id?: string
-          date?: string
+          mood_date?: string
           created_at?: string
         }
         Relationships: []
@@ -78,21 +78,18 @@ export interface Database {
       habit_logs: {
         Row: {
           id: number
-          user_id: string
           habit_id: number
           date: string
           created_at: string
         }
         Insert: {
           id?: number
-          user_id: string
           habit_id: number
           date: string
           created_at?: string
         }
         Update: {
           id?: number
-          user_id?: string
           habit_id?: number
           date?: string
           created_at?: string
