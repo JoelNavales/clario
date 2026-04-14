@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   isLoading: true,
-  signOut: async () => {},
+  signOut: async () => { },
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -35,19 +35,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (!mounted) return;
-        
+
         setSession(session)
         setUser(session?.user ?? null)
-        
+
         if (mounted) setIsLoading(false)
-        
+
         if (session?.user) {
           try {
-             // Fetch profile in the background without blocking the UI
-             const profileData = await authService.getProfile(session.user.id)
-             if (mounted) setProfile(profileData)
+            // Fetch profile in the background without blocking the UI
+            const profileData = await authService.getProfile(session.user.id)
+            if (mounted) setProfile(profileData)
           } catch (e) {
-             console.error("Error fetching profile", e)
+            console.error("Error fetching profile", e)
           }
         }
       } catch (error) {
@@ -60,17 +60,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (!mounted) return;
-      
+
       setSession(newSession)
       setUser(newSession?.user ?? null)
-      
+
       if (newSession?.user) {
         setIsLoading(false)
         try {
-           const profileData = await authService.getProfile(newSession.user.id)
-           setProfile(profileData)
+          const profileData = await authService.getProfile(newSession.user.id)
+          setProfile(profileData)
         } catch (e) {
-           console.error("Error fetching profile", e)
+          console.error("Error fetching profile", e)
         }
       } else {
         setProfile(null)

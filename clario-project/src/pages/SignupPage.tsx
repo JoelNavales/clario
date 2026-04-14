@@ -20,9 +20,7 @@ export function SignupPage() {
 
     try {
       await authService.signUp(email, password, name)
-      // Usually sign up might auto login or require email confirmation.
-      // If auto login is disabled, might stay here, else navigate to home.
-      navigate("/")
+      navigate("/onboarding")
     } catch (err: any) {
       setError(err.message || "Failed to sign up")
     } finally {
