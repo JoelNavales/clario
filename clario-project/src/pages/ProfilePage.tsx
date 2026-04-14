@@ -1,9 +1,30 @@
 import { Card, CardHeader, CardTitle, CardContent } from "../components/ui/Card"
 import { Button } from "../components/ui/Button"
-import { user, userStats } from "../data/mockData"
 import { Settings, LogOut, CheckCircle, Flame, Target, Activity } from "lucide-react"
+import { useAuth } from "../features/auth/hooks/useAuth"
+import { useHabits } from "../features/habits/hooks/useHabits"
+import { useTasks } from "../features/tasks/hooks/useTasks"
+import { useMood } from "../features/mood/hooks/useMood"
+import { useNavigate } from "react-router-dom"
 
 export function ProfilePage() {
+  const { user, profile, signOut } = useAuth()
+  const { habits } = useHabits()
+  const { tasks } = useTasks()
+  const { weeklyMoods } = useMood()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await signOut()
+    navigate("/login")
+  }
+
+  // Derive some stats
+  const totalHabits = habits.length
+  const tasksCompleted = tasks.filter(t => t.completed).length
+  const currentStreak = Math.max(...habits.map(h => h.streak), 0)
+  const moodConsistency = weeklyMoods.length > 0 ? `${Math.round((weeklyMoods.length / 7) * 100)}%` : "0%"
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 max-w-3xl">
       <div>
@@ -15,12 +36,16 @@ export function ProfilePage() {
       <Card>
         <CardContent className="p-8">
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-secondary shadow-sm">
-              <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-secondary shadow-sm flex items-center justify-center bg-primary text-3xl font-bold text-primary-foreground">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt={profile?.name || "User"} className="h-full w-full object-cover" />
+              ) : (
+                profile?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()
+              )}
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-2xl font-semibold tracking-tight">{user.name}</h2>
-              <p className="text-muted-foreground">{user.email}</p>
+              <h2 className="text-2xl font-semibold tracking-tight">{profile?.name || user?.user_metadata?.name || "User"}</h2>
+              <p className="text-muted-foreground">{user?.email}</p>
             </div>
             <Button variant="outline" className="shrink-0 gap-2 font-medium">
               <Settings className="h-4 w-4" />
@@ -37,7 +62,7 @@ export function ProfilePage() {
             <div className="p-3 bg-primary/10 text-primary rounded-full mb-1">
                <Target className="h-5 w-5" />
             </div>
-            <p className="text-2xl font-semibold">{userStats.totalHabits}</p>
+            <p className="text-2xl font-semibold">{totalHabits}</p>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Habits Tracked</p>
           </CardContent>
         </Card>
@@ -47,7 +72,7 @@ export function ProfilePage() {
             <div className="p-3 bg-green-500/10 text-green-600 rounded-full mb-1">
                <CheckCircle className="h-5 w-5" />
             </div>
-            <p className="text-2xl font-semibold">{userStats.tasksCompleted}</p>
+            <p className="text-2xl font-semibold">{tasksCompleted}</p>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Tasks Done</p>
           </CardContent>
         </Card>
@@ -57,8 +82,8 @@ export function ProfilePage() {
             <div className="p-3 bg-orange-500/10 text-orange-600 rounded-full mb-1">
                <Flame className="h-5 w-5" />
             </div>
-            <p className="text-2xl font-semibold">{userStats.currentStreak}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Day Streak</p>
+            <p className="text-2xl font-semibold">{currentStreak}</p>
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Top Streak</p>
           </CardContent>
         </Card>
 
@@ -67,8 +92,8 @@ export function ProfilePage() {
             <div className="p-3 bg-blue-500/10 text-blue-600 rounded-full mb-1">
                <Activity className="h-5 w-5" />
             </div>
-            <p className="text-2xl font-semibold">{userStats.moodConsistency}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Consistency</p>
+            <p className="text-2xl font-semibold">{moodConsistency}</p>
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Mood Logs Setup</p>
           </CardContent>
         </Card>
       </div>
@@ -85,7 +110,6 @@ export function ProfilePage() {
                 <p className="font-medium text-sm">Push Notifications</p>
                 <p className="text-sm text-muted-foreground">Receive daily reminders to track your habits.</p>
               </div>
-              {/* Mock Toggle */}
               <div className="h-6 w-11 rounded-full bg-primary relative cursor-pointer shadow-sm">
                 <div className="h-5 w-5 rounded-full bg-background absolute right-0.5 top-[2px]" />
               </div>
@@ -103,7 +127,7 @@ export function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => window.location.href = '/login'}>
+      <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
         <LogOut className="mr-2 h-4 w-4" />
         Log out
       </Button>

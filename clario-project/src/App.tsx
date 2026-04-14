@@ -8,26 +8,32 @@ import { InsightsPage } from "./pages/InsightsPage"
 import { ProfilePage } from "./pages/ProfilePage"
 import { LoginPage } from "./pages/LoginPage"
 import { SignupPage } from "./pages/SignupPage"
+import { AuthProvider } from "./features/auth/hooks/useAuth"
+import { ProtectedRoute } from "./features/auth/components/ProtectedRoute"
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="mood" element={<MoodPage />} />
-          <Route path="habits" element={<HabitsPage />} />
-          <Route path="tasks" element={<TasksPage />} />
-          <Route path="insights" element={<InsightsPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-        </Route>
-        
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="mood" element={<MoodPage />} />
+              <Route path="habits" element={<HabitsPage />} />
+              <Route path="tasks" element={<TasksPage />} />
+              <Route path="insights" element={<InsightsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
+          </Route>
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
 

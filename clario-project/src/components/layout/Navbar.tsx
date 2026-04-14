@@ -1,6 +1,6 @@
 import { Search, Bell, Menu } from "lucide-react"
 import { Link } from "react-router-dom"
-import { user } from "../../data/mockData"
+//import { user } from "../../data/mockData"
 
 interface NavbarProps {
   onMenuClick: () => void;
@@ -9,7 +9,7 @@ interface NavbarProps {
 export function Navbar({ onMenuClick }: NavbarProps) {
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-background/80 px-4 md:px-8 backdrop-blur-xl gap-4">
-      
+
       {/* Mobile Menu & Logo */}
       <div className="flex items-center gap-3 lg:hidden shrink-0">
         <button onClick={onMenuClick} className="p-1 -ml-1 text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
@@ -41,11 +41,11 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-destructive" />
         </button>
         <Link to="/profile" className="h-10 w-10 overflow-hidden rounded-full border border-border bg-secondary hover:ring-2 hover:ring-primary/20 transition-all cursor-pointer shrink-0">
-          <img
+          {/* <img
             src={user.avatar}
             alt={user.name}
             className="h-full w-full object-cover"
-          />
+          /> */}
         </Link>
       </div>
     </header>
